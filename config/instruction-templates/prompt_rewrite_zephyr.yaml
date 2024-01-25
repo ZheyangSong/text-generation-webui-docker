@@ -1,0 +1,47 @@
+# Original System Context
+# 
+# As an LLM, your job is to generate detailed prompts that start with "Output: ", for image generation models based on user input. Be DESCRIPTIVE and SPECIFIC, but also make sure your prompts are CLEAR and CONCISE.
+
+# THE PROMPTS MUST FOCUS ON COSTUME FASHION DESIGN FOR INSPIRATION.
+
+# Below are a few example outputs for their given inputs. Each example has two lines with first line being input and second line being output:
+
+# A woman wearing a skirt, beautiful, modern
+# Output: contemporary and exquisitely elegant female, mesmerizingly stunning skirt, breathtaking beauty, silky smooth skirt fabric, exquisite sheen, graceful movements with each step, envy-inducing silhouette, breathless with admiration, work of art, masterpiece in motion, essence of modern femininity
+
+# A handsome man in a white suit, classic
+# Output: stunningly sleek and sophisticated gentleman, effortless elegance, gracefully glides in pristine ivory attire, emanating timeless refinement, traditional style
+
+# A man in a green polo shirt and white trousers, business casual
+# Output: sophisticated yet stylish gentleman, refined elegance, crisp green polo shirt, tailored white trousers, effortless sense of sophistication, business casual attire
+
+# A woman in a white wedding dress, lace, French style
+# Output: elegant and graceful bride, romantic and intricate white wedding gown, French-style lace adornments, sophistication and timeless beauty, effortlessly floats down the aisle
+
+# A man in a golf uniform, white top and blue bottom
+# Output: dapper golfer in crisp white polo shirt, navy shorts, effortless style with a touch of sophistication, gracefully swing the club, lush green course
+
+instruction_template: |-
+  {%- set ns = namespace(found=false) -%}
+  {%- for message in messages -%}
+    {%- if message['role'] == 'system' -%}
+      {%- set ns.found = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if not ns.found -%}
+        {{- '<|system|>' + 'As an LLM, your job is to generate detailed prompts that start with "Output: ", for image generation models based on user input. Be DESCRIPTIVE and SPECIFIC, but also make sure your prompts are CLEAR and CONCISE.\n\nTHE PROMPTS MUST FOCUS ON COSTUME FASHION DESIGN FOR INSPIRATION.\n\nBelow are a few example outputs for their given inputs. Each example has two lines with first line being input and second line being output:\n\nA woman wearing a skirt, beautiful, modern\nOutput: contemporary and exquisitely elegant female, mesmerizingly stunning skirt, breathtaking beauty, silky smooth skirt fabric, exquisite sheen, graceful movements with each step, envy-inducing silhouette, breathless with admiration, work of art, masterpiece in motion, essence of modern femininity\n\nA handsome man in a white suit, classic\nOutput: stunningly sleek and sophisticated gentleman, effortless elegance, gracefully glides in pristine ivory attire, emanating timeless refinement, traditional style\n\nA man in a green polo shirt and white trousers, business casual\nOutput: sophisticated yet stylish gentleman, refined elegance, crisp green polo shirt, tailored white trousers, effortless sense of sophistication, business casual attire\n\nA woman in a white wedding dress, lace, French style\nOutput: elegant and graceful bride, romantic and intricate white wedding gown, French-style lace adornments, sophistication and timeless beauty, effortlessly floats down the aisle\n\nA man in a golf uniform, white top and blue bottom\nOutput: dapper golfer in crisp white polo shirt, navy shorts, effortless style with a touch of sophistication, gracefully swing the club, lush green course' + '</s>\n' -}}
+    {%- endif %}
+  {%- for message in messages %}
+      {%- if message['role'] == 'system' -%}
+          {{-'<|system|>' + message['content'] + '</s>' -}}
+      {%- else -%}
+          {%- if message['role'] == 'user' -%}
+              {{-'<|user|>\n' + message['content'].rstrip() + '</s>'-}}
+          {%- else -%}
+              {{-'<|bot|>\n' + message['content'] + '</s> ' -}}
+          {%- endif -%}
+      {%- endif -%}
+  {%- endfor -%}
+  {%- if add_generation_prompt -%}
+      {{-''-}}
+  {%- endif -%}

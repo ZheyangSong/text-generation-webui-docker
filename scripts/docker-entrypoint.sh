@@ -10,13 +10,13 @@ function ctrl_c {
 trap ctrl_c SIGTERM SIGINT SIGQUIT SIGHUP
 
 # Generate default configs if empty
-CONFIG_DIRECTORIES=("characters" "loras" "models" "presets" "prompts" "training/datasets" "training/formats")
+CONFIG_DIRECTORIES=("characters" "loras" "models" "presets" "prompts" "training/datasets" "training/formats", "instruction-templates")
 for config_dir in "${CONFIG_DIRECTORIES[@]}"; do
-  if [ -z "$(ls /app/"$config_dir")" ]; then
+  # if [ -z "$(ls /app/"$config_dir")" ]; then
     echo "*** Initialising config for: '$config_dir' ***"
-    cp -ar /src/"$config_dir"/* /app/"$config_dir"/
+    cp -ar -n /src/"$config_dir"/* /app/"$config_dir"/ 2>/dev/null
     chown -R 1000:1000 /app/"$config_dir"  # Not ideal... but convenient.
-  fi
+  # fi
 done
 
 # Populate extension folders if empty
@@ -37,10 +37,15 @@ if [[ -n "$BUILD_EXTENSIONS_LIVE" ]]; then
   . /scripts/extensions_runtime_rebuild.sh $live_extensions
 fi
 
+# Download used model
+if [ ! -f "/app/models/$MODEL_FILE_NAME" ]; then
+  python download-model.py $MODEL_NAME --specific-file $MODEL_FILE_NAME
+fi
+
 # Print variant
 VARIANT=$(cat /variant.txt)
 VERSION_TAG_STR=$(cat /version_tag.txt)
-echo "=== Running text-generation-webui variant: '$VARIANT' $VERSION_TAG_STR ===" 
+echo "=== Running text-generation-webui variant: '$VARIANT' $VERSION_TAG_STR ==="
 
 # Print version freshness
 cur_dir=$(pwd)
@@ -54,12 +59,12 @@ else
   # The command executed successfully
   COMMITS_BEHIND=$(git rev-list HEAD..main --count)
 fi
-echo "=== (This version is $COMMITS_BEHIND commits behind origin main) ===" 
+echo "=== (This version is $COMMITS_BEHIND commits behind origin main) ==="
 cd $cur_dir
 
 # Print build date
 BUILD_DATE=$(cat /build_date.txt)
-echo "=== Image build date: $BUILD_DATE ===" 
+echo "=== Image build date: $BUILD_DATE ==="
 
 # Assemble CMD and extra launch args
 eval "extra_launch_args=($EXTRA_LAUNCH_ARGS)"
